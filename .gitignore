@@ -6,3 +6,4 @@ tmp/*
 devbin
 */.sass-cache
 .sass-cache
+*/style.css
