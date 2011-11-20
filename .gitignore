@@ -1,0 +1,8 @@
+*.DS_Store
+*.tmproj
+*.lock
+sync
+tmp/*
+devbin
+*/.sass-cache
+.sass-cache
