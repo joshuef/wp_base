@@ -1,0 +1,152 @@
+
+
+
+
+/*FontFace*/
+
+
+@font-face {
+    font-family: 'ThrohandInk-grill';
+    src: url('webfont/throhandink-roman-webfont.eot');
+    src: url('webfont/throhandink-roman-webfont.eot?#iefix') format('embedded-opentype'),
+         url('webfont/throhandink-roman-webfont.woff') format('woff'),
+         url('webfont/throhandink-roman-webfont.ttf') format('truetype'),
+         url('webfont/throhandink-roman-webfont.svg#ThrohandInkRoman') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'ThrohandInk-grill';
+    src: url('webfont/throhandink-italic-webfont.eot');
+    src: url('webfont/throhandink-italic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('webfont/throhandink-italic-webfont.woff') format('woff'),
+         url('webfont/throhandink-italic-webfont.ttf') format('truetype'),
+         url('webfont/throhandink-italic-webfont.svg#ThrohandInkItalic') format('svg');
+    font-weight: normal;
+    font-style: italic;
+
+}
+
+
+/*Fonts*/
+
+$body-font: 'Crimson Text', "Garamond", 'Hoefler Text',Times New Roman,serif;
+$header-font: 'ThrohandInk-grill','Garamond','Hoefler Text',Times New Roman,serif;
+
+$header-size: 1.3em;
+/* Variables */
+
+$pad: 1em;
+$dent: 0.5em;
+
+
+/* Color Scheme?  http://colorschemedesigner.com */
+
+$beige:	#B0AA90;
+$brown: #47372F;
+$red: 	#660000;
+$bg: 	#DFDED5;
+$box-bg: rgba(black, .75);
+
+$quotes: #222;
+
+/*/////////// MIXINS ///////////*/
+
+@mixin border_left {
+	border-left: 3px solid $base;
+	
+}
+
+
+@mixin border_left {
+	border-left: 3px solid $base;
+	
+}
+/* Mixins */
+
+@mixin screen-reader {
+	.screen-reader, .screen-reader-text, .accessibility, #skip {
+		position: absolute;
+		left: -9999px;
+	}
+	
+}
+
+
+
+@mixin selection($bg: rgba(#57615F,0.7) ,$color:#fff){
+	
+	::selection	{ color:$color; background:$bg; }
+	::-moz-selection	{ color:$color; background:$bg; }
+}
+
+
+
+@mixin a_bare {
+	text-decoration: none;
+	color: $font-color;
+}
+
+
+@mixin bg_image($bgcolor: #000) {
+	background: $bgcolor url(../images/bgblack.jpg);
+	
+}
+
+
+@mixin border_bt($width:5px, $color: white) {
+	border-bottom: $width solid $color;
+}
+
+
+@mixin right {
+	float:right;
+	clear: right;
+	display:inline-block;
+}
+
+@mixin left {
+	float:left;
+	clear: left;
+	display:inline-block;
+}
+
+@mixin form_cursor {
+	label:hover, form button:hover, input[type=radio]:hover, input[type=checkbox]:hover {
+	cursor: pointer;
+		
+	}
+}
+
+@mixin opacity($value) {
+	opacity: $value;
+	-moz-opacity: $value;
+	filter:alpha(opacity=$value*100);
+}
+
+@mixin border_rad($radius: 10px, $color: white ) {
+
+		-webkit-border-radius: $radius;
+		-moz-border-radius: $radius;
+		border-radius: $radius;
+		background-color: $color;
+}
+	
+
+@mixin box_shadow($horizontal: -2px, $vertical: 2px, $blur: 5px, $color: #000000) {
+	webkit-box-shadow: $horizontal $vertical $blur $color;
+	-moz-box-shadow: $horizontal $vertical $blur $color;
+	box-shadow: $horizontal $vertical $blur $color; 
+}
+
+
+
+@mixin transitionProp($prop,$duration:0.2s, $ease:ease-out) {
+  -webkit-transition: $prop $duration $ease;
+     -moz-transition: $prop $duration $ease;
+      -ms-transition: $prop $duration $ease;
+       -o-transition: $prop $duration $ease;
+          transition: $prop $duration $ease;
+}
