@@ -44,11 +44,11 @@
 	</head>
 	<body <?php body_class(); ?>>
 		<header role="banner">
-			<div class="logo">
-				<img src="<?php echo get_bloginfo('stylesheet_directory')?>/images/logo_white.png">
-				
-				<h1><a href="<?php echo home_url( '/' ); ?>" title="<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></h1>
-				</div><!-- logo -->
+				<a href="<?php echo home_url( '/' ); ?>" title="<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>" rel="home">	<div class="logo">
+						<img src="<?php echo get_bloginfo('stylesheet_directory')?>/images/logo-v1.jpg">
+
+						<h1><?php bloginfo( 'name' ); ?></h1>
+						</div></a><!-- logo -->
 			<p class="accessibility"><?php bloginfo( 'description' ); ?></p>
 		</header>
 		<nav id="access" role="navigation">
