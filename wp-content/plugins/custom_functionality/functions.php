@@ -390,6 +390,6 @@ add_action('admin_footer', 'my_admin_footer');
 
 
 
-include('error_handler.php');
+//include('error_handler.php');
 
 ?>
