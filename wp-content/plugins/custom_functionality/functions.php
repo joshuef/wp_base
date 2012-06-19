@@ -8,6 +8,9 @@ Author URI: http://www.wyli.co.uk
 */
 
 
+include('p-options.php');
+
+
 // 
 // add_action( 'init', 'register_cpt_menu_item' );
 // 
@@ -189,9 +192,11 @@ function my_first_meta_save_data($post_id) {
     global $meta_box;
 
     // verify nonce -- checks that the user has access
-         if (!wp_verify_nonce($_POST['my_first_meta_box_nonce'], basename(__FILE__))) {
-             return $post_id;
-         }
+        if ( isset( $_POST['my_first_meta_box_nonce'] ) ){
+	         if (!wp_verify_nonce($_POST['my_first_meta_box_nonce'], basename(__FILE__))) {
+	             return $post_id;
+	         }
+		}
       
        // check autosave
               if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
@@ -209,7 +214,12 @@ function my_first_meta_save_data($post_id) {
 
     foreach ($meta_box['fields'] as $field) { // save each option
         $old = get_post_meta($post_id, $field['id'], true);
-        $new = $_POST[$field['id']];
+       		$new = null;
+	      	if ( isset( $_POST[$field['id']] ) ){
+	
+		 		$new = $_POST[$field['id']];
+			}
+	
 
         if ($new && $new != $old) { // compare changes to existing values
             update_post_meta($post_id, $field['id'], $new);
@@ -219,7 +229,6 @@ function my_first_meta_save_data($post_id) {
     }
 }
 add_action('save_post', 'my_first_meta_save_data'); // save the data
-
 
 
 
@@ -384,6 +393,22 @@ function my_admin_footer() {
 	<?php
 }
 add_action('admin_footer', 'my_admin_footer');
+
+
+
+// ====================
+// = Get page ID by slug =
+// ====================
+
+function get_ID_by_slug($page_slug) {
+    $page = get_page_by_path($page_slug);
+    if ($page) {
+        return $page->ID;
+    } else {
+        return null;
+    }
+}
+
 
 
 
