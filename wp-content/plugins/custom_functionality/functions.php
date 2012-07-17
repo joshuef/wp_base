@@ -81,6 +81,12 @@ $meta_box = array(
             'type' => 'text',
             'std' => ''
         ),
+		array(  
+		    'name' => 'Repeatable',  
+		    'desc'  => 'A description for the field.',  
+		    'id'    => $prefix.'repeatable',  
+		    'type'  => 'repeatable' 
+		),
         array(
             'name' => 'Additional Details',
             'desc' => 'Enter extra post details here',
@@ -176,6 +182,28 @@ function display_html() {
             case 'checkbox': // the HTML to display for type=checkbox options
                 echo '<input type="checkbox" name="', $field['id'], '" id="', $field['id'], '"', $meta ? ' checked="checked"' : '', ' />';
                 break;
+		
+			// repeatable  
+			case 'repeatable':  
+			    echo '<a class="repeatable-add button" href="#">+</a> 
+			            <ul id="'.$field['id'].'-repeatable" class="custom_repeatable">';  
+			    $i = 0;  
+			    if ($meta) {  
+			        foreach($meta as $row) {  
+			            echo '<li><span class="sort hndle">|||</span> 
+			                        <input type="text" name="'.$field['id'].'['.$i.']" id="'.$field['id'].'" value="'.$row.'" size="30" /> 
+			                        <a class="repeatable-remove button" href="#">-</a></li>';  
+			            $i++;  
+			        }  
+			    } else {  
+			        echo '<li><span class="sort hndle">|||</span> 
+			                    <input type="text" name="'.$field['id'].'['.$i.']" id="'.$field['id'].'" value="" size="30" /> 
+			                    <a class="repeatable-remove button" href="#">-</a></li>';  
+			    }  
+			    echo '</ul> 
+			        <span class="description">'.$field['desc'].'</span>';  
+			break;
+
         }
         echo     '<td>',
             '</tr>';
@@ -377,8 +405,14 @@ function my_admin_init() {
 	wp_enqueue_script('jquery-ui-core');
 	wp_enqueue_script('jquery-ui-datepicker', $pluginfolder . '/js/jquery.ui.datepicker.js', array('jquery', 'jquery-ui-core') );
 	wp_enqueue_style('jquery.ui.theme', $pluginfolder . '/js/smoothness/jquery-ui-1.8.16.custom.css');
+	wp_enqueue_script('jquery-ui-sortable');
+	wp_enqueue_script('custom-js', $pluginfolder . '/js/admin-global.js');
 }
 add_action('admin_init', 'my_admin_init');
+
+
+
+
 
 
 function my_admin_footer() {

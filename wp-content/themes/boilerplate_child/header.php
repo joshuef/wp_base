@@ -1,12 +1,7 @@
 <?php
 /**
- * The Header for our theme.
  *
  * Displays all of the <head> section and everything up till <div id="main">
- *
- * @package WordPress
- * @subpackage Boilerplate
- * @since Boilerplate 1.0
  */
 ?>
 <!--[if HTML5]><![endif]-->
@@ -28,11 +23,6 @@
 		
 		<meta charset="<?php bloginfo( 'charset' ); ?>" />
 		<title><?php
-			/*
-			 * Print the <title> tag based on what is being viewed.
-			 * We filter the output of wp_title() a bit -- see
-			 * boilerplate_filter_wp_title() in functions.php.
-			 */
 			wp_title( '|', true, 'right' );
 		?></title>
 		<link rel="profile" href="http://gmpg.org/xfn/11" />
