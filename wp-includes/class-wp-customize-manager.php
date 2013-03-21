@@ -1,12 +1,11 @@
 <?php
 /**
- * Customize
+ * Customize Manager.
  *
  * @package WordPress
  * @subpackage Customize
  * @since 3.4.0
  */
-
 final class WP_Customize_Manager {
 	protected $theme;
 	protected $original_stylesheet;
@@ -16,6 +15,8 @@ final class WP_Customize_Manager {
 	protected $settings = array();
 	protected $sections = array();
 	protected $controls = array();
+
+	protected $nonce_tick;
 
 	protected $customized;
 
@@ -54,10 +55,12 @@ final class WP_Customize_Manager {
 		add_action( 'customize_controls_enqueue_scripts', array( $this, 'enqueue_control_scripts' ) );
 	}
 
- 	/**
+	/**
 	 * Return true if it's an AJAX request.
 	 *
 	 * @since 3.4.0
+	 *
+	 * @return bool
 	 */
 	public function doing_ajax() {
 		return isset( $_POST['customized'] ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX );
@@ -67,10 +70,10 @@ final class WP_Customize_Manager {
 	 * Custom wp_die wrapper. Returns either the standard message for UI
 	 * or the AJAX message.
 	 *
-	 * @param  mixed $ajax_message AJAX return
-	 * @param  mixed $message      UI message
-	 *
 	 * @since 3.4.0
+	 *
+	 * @param mixed $ajax_message AJAX return
+	 * @param mixed $message UI message
 	 */
 	protected function wp_die( $ajax_message, $message = null ) {
 		if ( $this->doing_ajax() )
@@ -86,6 +89,8 @@ final class WP_Customize_Manager {
 	 * Return the AJAX wp_die() handler if it's a customized request.
 	 *
 	 * @since 3.4.0
+	 *
+	 * @return string
 	 */
 	public function wp_die_handler() {
 		if ( $this->doing_ajax() )
@@ -93,10 +98,11 @@ final class WP_Customize_Manager {
 
 		return '_default_wp_die_handler';
 	}
+
 	/**
-	* Start preview and customize theme.
-	*
-	* Check if customize query variable exist. Init filters to filter the current theme.
+	 * Start preview and customize theme.
+	 *
+	 * Check if customize query variable exist. Init filters to filter the current theme.
 	 *
 	 * @since 3.4.0
 	 */
@@ -135,6 +141,11 @@ final class WP_Customize_Manager {
 		$this->start_previewing_theme();
 	}
 
+	/**
+	 * Callback to validate a theme once it is loaded
+	 *
+	 * @since 3.4.0
+	 */
 	function after_setup_theme() {
 		if ( ! $this->doing_ajax() && ! validate_current_theme() ) {
 			wp_redirect( 'themes.php?broken=true' );
@@ -277,6 +288,9 @@ final class WP_Customize_Manager {
 	 * Instead, the JS will sniff out the location header.
 	 *
 	 * @since 3.4.0
+	 *
+	 * @param $status
+	 * @return int
 	 */
 	public function wp_redirect_status( $status ) {
 		if ( $this->is_preview() && ! is_admin() )
@@ -289,6 +303,9 @@ final class WP_Customize_Manager {
 	 * Decode the $_POST attribute used to override the WP_Customize_Setting values.
 	 *
 	 * @since 3.4.0
+	 *
+	 * @param mixed $setting A WP_Customize_Setting derived object
+	 * @return string Sanitized attribute
 	 */
 	public function post_value( $setting ) {
 		if ( ! isset( $this->_post_values ) ) {
@@ -308,6 +325,8 @@ final class WP_Customize_Manager {
 	 * @since 3.4.0
 	 */
 	public function customize_preview_init() {
+		$this->nonce_tick = check_ajax_referer( 'preview-customize_' . $this->get_stylesheet(), 'nonce' );
+
 		$this->prepare_controls();
 
 		wp_enqueue_script( 'customize-preview' );
@@ -361,6 +380,13 @@ final class WP_Customize_Manager {
 			'values'  => array(),
 			'channel' => esc_js( $_POST['customize_messenger_channel'] ),
 		);
+
+		if ( 2 == $this->nonce_tick ) {
+			$settings['nonce'] = array(
+				'save' => wp_create_nonce( 'save-customize_' . $this->get_stylesheet() ),
+				'preview' => wp_create_nonce( 'preview-customize_' . $this->get_stylesheet() )
+			);
+		}
 
 		foreach ( $this->settings as $id => $setting ) {
 			$settings['values'][ $id ] = $setting->js_value();
@@ -453,6 +479,7 @@ final class WP_Customize_Manager {
 	 *
 	 * @since 3.4.0
 	 *
+	 * @param $current_theme {@internal Parameter is not used}
 	 * @return string Theme name.
 	 */
 	public function current_theme( $current_theme ) {
@@ -468,14 +495,14 @@ final class WP_Customize_Manager {
 		if ( ! $this->is_preview() )
 			die;
 
-		check_ajax_referer( 'customize_controls-' . $this->get_stylesheet(), 'nonce' );
+		check_ajax_referer( 'save-customize_' . $this->get_stylesheet(), 'nonce' );
 
 		// Do we have to switch themes?
 		if ( ! $this->is_theme_active() ) {
 			// Temporarily stop previewing the theme to allow switch_themes()
 			// to operate properly.
 			$this->stop_previewing_theme();
-			switch_theme( $this->get_template(), $this->get_stylesheet() );
+			switch_theme( $this->get_stylesheet() );
 			$this->start_previewing_theme();
 		}
 
@@ -619,6 +646,7 @@ final class WP_Customize_Manager {
 	 *
 	 * @param object $a Object A.
 	 * @param object $b Object B.
+	 * @return int
 	 */
 	protected final function _cmp_priority( $a, $b ) {
 		$ap = $a->priority;
@@ -949,6 +977,9 @@ final class WP_Customize_Manager {
 	 * Accepts 'blank', and otherwise uses sanitize_hex_color_no_hash().
 	 *
 	 * @since 3.4.0
+	 *
+	 * @param string $color
+	 * @return string
 	 */
 	public function _sanitize_header_textcolor( $color ) {
 		return ( 'blank' === $color ) ? 'blank' : sanitize_hex_color_no_hash( $color );
@@ -962,6 +993,9 @@ final class WP_Customize_Manager {
  * For validating values without a #, see sanitize_hex_color_no_hash().
  *
  * @since 3.4.0
+ *
+ * @param string $color
+ * @return string|null
  */
 function sanitize_hex_color( $color ) {
 	if ( '' === $color )
@@ -984,6 +1018,10 @@ function sanitize_hex_color( $color ) {
  * Returns either '', a 3 or 6 digit hex color (without a #), or null.
  *
  * @since 3.4.0
+ * @uses sanitize_hex_color()
+ *
+ * @param string $color
+ * @return string|null
  */
 function sanitize_hex_color_no_hash( $color ) {
 	$color = ltrim( $color, '#' );
@@ -1001,6 +1039,9 @@ function sanitize_hex_color_no_hash( $color ) {
  * This method should only be necessary if using sanitize_hex_color_no_hash().
  *
  * @since 3.4.0
+ *
+ * @param string $color
+ * @return string
  */
 function maybe_hash_hex_color( $color ) {
 	if ( $unhashed = sanitize_hex_color_no_hash( $color ) )

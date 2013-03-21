@@ -1,5 +1,8 @@
 <?php
 
+//_____________________________________________ remove header version number insertion
+remove_action('wp_header', 'wp_generator');
+
 
 if (!function_exists('is_page_or_ancestor')) 
 {

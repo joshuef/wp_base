@@ -18,7 +18,9 @@
  * one or the other.
  *
  * Prevents redirection for feeds, trackbacks, searches, comment popup, and
- * admin URLs. Does not redirect on IIS, page/post previews, and on form data.
+ * admin URLs. Does not redirect on non-pretty-permalink-supporting IIS 7,
+ * page/post previews, WP admin, Trackbacks, robots.txt, searches, or on POST
+ * requests.
  *
  * Will also attempt to find the correct link when a user enters a URL that does
  * not exist based on exact WordPress query. Will instead try to parse the URL
@@ -37,7 +39,7 @@
 function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 	global $wp_rewrite, $is_IIS, $wp_query, $wpdb;
 
-	if ( is_trackback() || is_search() || is_comments_popup() || is_admin() || !empty($_POST) || is_preview() || is_robots() || $is_IIS )
+	if ( is_trackback() || is_search() || is_comments_popup() || is_admin() || !empty($_POST) || is_preview() || is_robots() || ( $is_IIS && !iis7_supports_permalinks() ) )
 		return;
 
 	if ( !$requested_url ) {
@@ -100,7 +102,7 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 		}
 
 		if ( ! $redirect_url ) {
-			if ( $redirect_url = redirect_guess_404_permalink( $requested_url ) ) {
+			if ( $redirect_url = redirect_guess_404_permalink() ) {
 				$redirect['query'] = _remove_qs_args_if_not_in_url( $redirect['query'], array( 'page', 'feed', 'p', 'page_id', 'attachment_id', 'pagename', 'name', 'post_type' ), $redirect_url );
 			}
 		}
@@ -280,7 +282,7 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 
 		if ( 'wp-register.php' == basename( $redirect['path'] ) ) {
 			if ( is_multisite() )
-				$redirect_url = apply_filters( 'wp_signup_location', site_url( 'wp-signup.php' ) );
+				$redirect_url = apply_filters( 'wp_signup_location', network_site_url( 'wp-signup.php' ) );
 			else
 				$redirect_url = site_url( 'wp-login.php?action=register' );
 			wp_redirect( $redirect_url, 301 );
@@ -461,30 +463,15 @@ function _remove_qs_args_if_not_in_url( $query_string, Array $args_to_check, $ur
 }
 
 /**
- * Attempts to guess the correct URL from the current URL (that produced a 404) or
- * the current query variables.
+ * Attempts to guess the correct URL based on query vars
  *
  * @since 2.3.0
  * @uses $wpdb
  *
- * @param string $current_url Optional. The URL that has 404'd.
  * @return bool|string The correct URL if one is found. False on failure.
  */
-function redirect_guess_404_permalink( $current_url = '' ) {
+function redirect_guess_404_permalink() {
 	global $wpdb, $wp_rewrite;
-
-	if ( ! empty( $current_url ) )
-		$parsed_url = @parse_url( $current_url );
-
-	// Attempt to redirect bare category slugs if the permalink structure starts
-	// with the %category% tag.
-	if ( isset( $parsed_url['path'] )
-		&& preg_match( '#^[^%]+%category%#', $wp_rewrite->permalink_structure )
-		&& $cat = get_category_by_path( $parsed_url['path'] )
-	) {
-		if ( ! is_wp_error( $cat ) )
-			return get_term_link( $cat );
-	}
 
 	if ( get_query_var('name') ) {
 		$where = $wpdb->prepare("post_name LIKE %s", like_escape( get_query_var('name') ) . '%');
